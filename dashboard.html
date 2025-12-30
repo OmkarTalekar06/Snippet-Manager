@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="logo.png">
+
+    <title>Snippet Manager</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #0f172a;
+        color: #e5e7eb;
+        padding: 20px;
+    }
+
+    h2 {
+        color: #38bdf8;
+        margin-top: 30px;
+    }
+
+    input, textarea {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 6px;
+        border: none;
+        outline: none;
+        background: #1e293b;
+        color: #e5e7eb;
+    }
+
+    textarea {
+        resize: vertical;
+    }
+
+    button {
+        padding: 10px;
+        background: #38bdf8;
+        color: #020617;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    button:hover {
+        background: #0ea5e9;
+    }
+
+    #snippet-list {
+        margin-top: 15px;
+        background: #020617;
+        padding: 10px;
+        border-radius: 8px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .snippet-item {
+        padding: 8px;
+        margin-bottom: 6px;
+        background: #1e293b;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .snippet-item:hover {
+        background: #334155;
+    }
+
+    /* SELECTED SNIPPET AREA */
+    #selectedSnippet {
+        height: 250px;   /* increased height */
+        background: #020617;
+        font-family: monospace;
+        font-size: 14px;
+    }
+</style>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+    
+  const firebaseConfig = {
+    apiKey: "AIzaSyBKqqzRUEizU1PWMiC49hn7eictXuK0_Ps",
+    authDomain: "snippet-manager-06.firebaseapp.com",
+    projectId: "snippet-manager-06",
+    storageBucket: "snippet-manager-06.firebasestorage.app",
+    messagingSenderId: "606336258558",
+    appId: "1:606336258558:web:1391a0282b9425c500f0af",
+    measurementId: "G-YT2WWZBERD"
+  };
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+</script>
+</head>
+<body>
+    
+    <h2>Add Snippet</h2>
+    <input type="text" id="snippetName" placeholder="Snippet Name">
+    <textarea id="snippetContent" rows="5" placeholder="Snippet Content"></textarea>
+    <button onclick="addSnippet()">Add Snippet</button>
+
+    <h2>Saved Snippets</h2>
+    <div id="snippet-list"></div>
+
+    <h2>Selected Snippet</h2>
+    <textarea id="selectedSnippet" rows="5" readonly></textarea>
+
+    <button onclick="deleteSnippet()">Delete Snippet</button>
+
+
+<script>
+    const DELETE_PASSWORD = "admin123";
+    const snippetList = document.getElementById('snippet-list');
+    const selectedSnippet = document.getElementById('selectedSnippet');
+
+    // ADD SNIPPET TO FIRESTORE
+    function addSnippet() {
+        const name = document.getElementById('snippetName').value.trim();
+        const content = document.getElementById('snippetContent').value.trim();
+
+        if (!name || !content) {
+            alert("Please enter both name and content!");
+            return;
+        }
+
+        db.collection("snippets").doc(name).set({
+            content: content
+        }).then(() => {
+            document.getElementById('snippetName').value = '';
+            document.getElementById('snippetContent').value = '';
+            renderSnippetList();
+        });
+    }
+
+    // LOAD & DISPLAY SNIPPETS
+    function renderSnippetList() {
+        snippetList.innerHTML = '';
+
+        db.collection("snippets").get().then(snapshot => {
+            snapshot.forEach(doc => {
+                const div = document.createElement('div');
+                div.textContent = doc.id;
+                div.className = 'snippet-item';
+
+               div.onclick = () => {
+    selectedSnippet.value = doc.data().content;
+    selectedSnippet.setAttribute("data-name", doc.id);
+};
+
+
+                snippetList.appendChild(div);
+            });
+        });
+    }
+
+    // LOAD ON PAGE OPEN
+    renderSnippetList();
+    function deleteSnippet() {
+    const name = selectedSnippet.getAttribute("data-name");
+
+    if (!name) {
+        alert("Select a snippet first");
+        return;
+    }
+
+    const pass = prompt("Enter delete password:");
+
+    if (pass !== DELETE_PASSWORD) {
+        alert("Wrong password");
+        return;
+    }
+
+    db.collection("snippets").doc(name).delete().then(() => {
+        alert("Snippet deleted");
+        selectedSnippet.value = "";
+        selectedSnippet.removeAttribute("data-name");
+        renderSnippetList();
+    });
+}
+
+</script>
+
+
+</body>
+</html>
