@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>QR Login</title>
+
+<!-- QR Code Library -->
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<style>
+body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#0f172a;
+    font-family:Arial, sans-serif;
+}
+
+.login-box{
+    background:#020617;
+    padding:30px;
+    width:320px;
+    border-radius:10px;
+    box-shadow:0 0 20px rgba(0,0,0,0.5);
+    text-align:center;
+}
+
+.logo{
+    width:90px;
+    height:90px;
+    margin:0 auto 15px;
+}
+
+.logo img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+}
+
+.login-box h2{
+    color:#38bdf8;
+    margin-bottom:20px;
+}
+
+#qr{
+    display:flex;
+    justify-content:center;
+    margin:20px 0;
+}
+
+.status{
+    font-size:14px;
+    color:#94a3b8;
+}
+</style>
+
+<script>
+  // ===== FIREBASE CONFIG =====
+  const firebaseConfig = {
+    apiKey: "AIzaSyBKqqzRUEizU1PWMiC49hn7eictXuK0_Ps",
+    authDomain: "snippet-manager-06.firebaseapp.com",
+    projectId: "snippet-manager-06",
+    storageBucket: "snippet-manager-06.firebasestorage.app",
+    messagingSenderId: "606336258558",
+    appId: "1:606336258558:web:1391a0282b9425c500f0af",
+    measurementId: "G-YT2WWZBERD"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  // ===== QR LOGIN LOGIC =====
+  let qrDiv, statusText, qrRef, token;
+
+  window.onload = () => {
+      qrDiv = document.getElementById("qr");
+      statusText = document.querySelector(".status");
+
+      generateQR();                // generate first QR
+      setInterval(generateQR, 60000); // refresh every 60 seconds
+  };
+
+  function generateQR() {
+      qrDiv.innerHTML = "";         // clear old QR
+      token = Date.now().toString(); // new unique token
+
+      // create QR code
+      new QRCode(qrDiv, {
+          text: token,
+          width: 160,
+          height: 160,
+          colorDark: "#38bdf8",
+          colorLight: "#020617"
+      });
+
+      statusText.innerText = "Waiting for scan...";
+
+      // save token in Firestore
+      db.collection("qr_login").doc(token).set({
+          status: "pending"
+      });
+
+      listenForLogin(); // listen for approval
+  }
+function listenForLogin() {
+    if(qrRef) qrRef(); // cancel previous listener
+
+    qrRef = db.collection("qr_login").doc(token)
+      .onSnapshot(doc => {
+          if(doc.exists && doc.data().status === "approved"){
+              statusText.innerText = "Scanned ✅"; // show scanned
+
+              // Redirect to desktop file after 1 second
+              setTimeout(() => {
+                  window.location.href = "file:///C:/Users/PC/Desktop/test5.html";
+              }, 1000);
+          }
+      });
+}
+
+</script>
+</head>
+<body>
+<div class="login-box">
+
+    <!-- LOGO -->
+    <div class="logo">
+        <img src="logo.png" alt="Logo">
+    </div>
+
+    <h2>Scan to Login</h2>
+
+    <!-- QR CODE -->
+    <div id="qr"></div>
+
+    <div class="status">Waiting for scan...</div>
+
+</div>
+</body>
+</html>
