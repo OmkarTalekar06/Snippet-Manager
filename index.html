@@ -118,8 +118,10 @@ function listenForLogin() {
 
               // Redirect to desktop file after 1 second
               setTimeout(() => {
-                  window.location.href = "/Snippet-Manager/dashboard.html";
-              }, 1000);
+            window.location.replace(
+                window.location.origin + "/Snippet-Manager/dashboard.html"
+            );
+        }, 1000);
           }
       });
 }
