@@ -105,20 +105,23 @@ The system works in three parts:
 
 ## 📁 Project Structure
 
+```text
 Snippet-Manager/
 │
 ├── index.html
 ├── dashboard.html
+│
 ├── assets/
-│ └── logo.png
+│   └── logo.png
+│
 ├── flutter_app/
-│ ├── lib/
-│ │ └── main.dart
-│ ├── android/
-│ ├── pubspec.yaml
-│ └── assets/
-│ └── logo.png
-
+│   ├── lib/
+│   │   └── main.dart
+│   ├── android/
+│   ├── pubspec.yaml
+│   └── assets/
+│       └── logo.png
+```
 ---
 
 ## 🔐 Firebase Collections
